@@ -21,23 +21,23 @@ void MainWindow::on_BtnRandom_clicked()
     QLabel* singleBlock;
     QGridLayout* GameGrid =ui->GameGrid;
     Width = ui->CbWidth->currentIndex()+3;
-    InitialRandom();
-
-    for(int i=0;i< Width*Width -1 ;i++)
+    InitialRandom(); //随机初始化
+    Blocks.resize(Width);
+    for(int i=0;i< Width ;i++)
     {
-        singleBlock = new QLabel(QString::number(Nums[i]));
-        singleBlock->setAlignment(Qt::AlignCenter);
-        singleBlock->setFrameShape(QFrame::Box);
-        GameGrid->addWidget(singleBlock,i / Width,i % Width);
-        Blocks.push_back(singleBlock);
+        Blocks[i].resize(Width);
+        for(int j=0;j<Width;j++)
+        {
+            singleBlock = new QLabel(QString::number(Nums[i*Width+j]));
+            singleBlock->setAlignment(Qt::AlignCenter);
+            singleBlock->setFrameShape(QFrame::StyledPanel);
+            GameGrid->addWidget(singleBlock,i,j);
+            Blocks[i][j]=singleBlock;
+        }
     }
     //处理空格
-    singleBlock = new QLabel();
-    singleBlock->setAlignment(Qt::AlignCenter);
-    singleBlock->setFrameShape(QFrame::Box);
-    singleBlock->setVisible(false);
-    GameGrid->addWidget(singleBlock, Width-1, Width-1);
-    Blocks.push_back(singleBlock);
+    Blocks[Width-1][Width-1]->setText("");
+    Blocks[Width-1][Width-1]->setVisible(false);
 
 }
 
@@ -46,30 +46,31 @@ void MainWindow::on_BtnReset_clicked()
     ClearGrid();
     QLabel* singleBlock;
     QGridLayout* GameGrid =ui->GameGrid;
-
-    for(int i=0;i< Width*Width -1 ;i++)
+    Blocks.resize(Width);
+    for(int i=0;i< Width ;i++)
     {
-        singleBlock = new QLabel(QString::number(Nums[i]));
-        singleBlock->setAlignment(Qt::AlignCenter);
-        singleBlock->setFrameShape(QFrame::Box);
-        GameGrid->addWidget(singleBlock,i / Width,i % Width);
-        Blocks.push_back(singleBlock);
+        Blocks[i].resize(Width);
+        for(int j=0;j<Width;j++)
+        {
+            singleBlock = new QLabel(QString::number(Nums[i*Width+j]));
+            singleBlock->setAlignment(Qt::AlignCenter);
+            singleBlock->setFrameShape(QFrame::StyledPanel);
+            GameGrid->addWidget(singleBlock,i,j);
+            Blocks[i][j]=singleBlock;
+        }
     }
     //处理空格
-    singleBlock = new QLabel();
-    singleBlock->setAlignment(Qt::AlignCenter);
-    singleBlock->setFrameShape(QFrame::Box);
-    singleBlock->setVisible(false);
-    GameGrid->addWidget(singleBlock, Width-1, Width-1);
-    Blocks.push_back(singleBlock);
+   Blocks[Width-1][Width-1]->setText("");
+   Blocks[Width-1][Width-1]->setVisible(false);
 }
 
 void MainWindow::ClearGrid()
 {
     if(Width == 0)
         return;
-    for(int i=0;i<Width*Width;i++)
-        delete Blocks[i];
+    for(int i=0;i<Width;i++)
+        for(int j=0;j<Width;j++)
+            delete Blocks[i][j];
     Blocks.clear();
 }
 
@@ -121,8 +122,10 @@ void MainWindow::InitialRandom()
         if(ReverseNumbers % 2 == 0 ) //判断是否有解
             Vaild = true;
     }while(!Vaild);
-
+    Nums.push_back(0); //空格位添加0
 }
+
+
 
 
 

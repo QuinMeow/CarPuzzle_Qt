@@ -29,7 +29,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QVector<QLabel*> Blocks; //Vector对象用于存储单元格指针
+    QVector<QVector<QLabel*>> Blocks; //Vector对象用于存储单元格指针
     std::vector<int> Nums; //存储当前初始顺序
     int Width = 0; //存储华容道规模
     void ClearGrid(); //清除华容道

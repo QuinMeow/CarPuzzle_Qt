@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>498</width>
-    <height>593</height>
+    <width>400</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>498</width>
-    <height>593</height>
+    <width>400</width>
+    <height>500</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>498</width>
-    <height>593</height>
+    <width>400</width>
+    <height>500</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -33,6 +33,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QLabel" name="label">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
           <property name="frameShadow">
            <enum>QFrame::Plain</enum>
           </property>
@@ -183,11 +186,28 @@
       </item>
       <item row="2" column="0">
        <widget class="QFrame" name="GameFrame">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
-          <width>0</width>
-          <height>400</height>
+          <width>300</width>
+          <height>300</height>
          </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel
+{
+	background-color:rgb(216, 255, 252);
+	border : 2px solid gray;
+    border-radius: 5px;
+	padding : 2px;
+	margin : 2px;
+}
+</string>
         </property>
         <property name="frameShape">
          <enum>QFrame::Box</enum>
@@ -197,7 +217,11 @@
         </property>
         <layout class="QGridLayout" name="gridLayout_4">
          <item row="0" column="0">
-          <layout class="QGridLayout" name="GameGrid"/>
+          <layout class="QGridLayout" name="GameGrid">
+           <property name="spacing">
+            <number>10</number>
+           </property>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -211,8 +235,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>498</width>
-     <height>21</height>
+     <width>400</width>
+     <height>25</height>
     </rect>
    </property>
   </widget>
