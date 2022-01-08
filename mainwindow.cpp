@@ -6,6 +6,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    Width = 0;
+    isLatest = false;
+    MinCount = 65535;
 }
 
 MainWindow::~MainWindow()
@@ -22,7 +25,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
         if(mouseEvent->button() == Qt::LeftButton)
         {
-            int direction = -1;
+            char direction = 'n';
             for(row=0;row<Width;row++)
                 for(col=0;col<Width;col++)
                     if(Blocks[row][col]==obj)
@@ -30,19 +33,23 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                         direction = isAroundSpare(row,col);
                         switch(direction)
                         {
-                        case -1:
+                        case 'n':
                             return false;
-                        case 0:
+                        case 'r':
                             SwepBlocks(row,col,row,col+1);
+                            isLatest = false;
                             return true;
-                        case 1:
+                        case 'd':
                             SwepBlocks(row,col,row+1,col);
+                            isLatest = false;
                             return true;
-                        case 2:
+                        case 'l':
                             SwepBlocks(row,col,row,col-1);
+                            isLatest = false;
                             return true;
-                        case 3:
+                        case 'u':
                             SwepBlocks(row,col,row-1,col);
+                            isLatest = false;
                             return true;
                         }
                     }
@@ -58,40 +65,40 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             for(col = 0 ; col < Width ; col++)
                 if(Blocks[row][col]->text()=="0")
                 {
-                    if(KeyPress->key() == Qt::Key_Up)
+                    switch(KeyPress->key())
                     {
+                    case Qt::Key_Up:
                         if(row!=Width-1)
                         {
                             SwepBlocks(row+1,col,row,col);
+                            isLatest = false;
                             return true;
                         }
-                    }
-                    else if(KeyPress->key() == Qt::Key_Down)
-                    {
+                    case Qt::Key_Down:
                         if(row!=0)
                         {
                             SwepBlocks(row-1,col,row,col);
+                            isLatest = false;
                             return true;
                         }
-                    }
-                    else if(KeyPress->key() == Qt::Key_Left)
-                    {
+                    case Qt::Key_Left:
                         if(col!=Width-1)
                         {
                             SwepBlocks(row,col+1,row,col);
+                            isLatest = false;
                             return true;
                         }
-                    }
-                    else if(KeyPress->key() == Qt::Key_Right)
-                    {
+                    case Qt::Key_Right:
                         if(col!=0)
                         {
                             SwepBlocks(row,col-1,row,col);
+                            isLatest = false;
                             return true;
                         }
-                    }
-                    else
+                    default:
                         return false;
+
+                    }
                 }
     }
     else
@@ -99,10 +106,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 }
 
 
-
-
 void MainWindow::on_BtnRandom_clicked()
 {
+    MinCount = 65535;
+    ui->LabMin->setText("0");
     ClearGrid();
     QLabel* singleBlock;
     QGridLayout* GameGrid =ui->GameGrid;
@@ -152,14 +159,77 @@ void MainWindow::on_BtnReset_clicked()
    Blocks[Width-1][Width-1]->grabKeyboard();
 }
 
+
+void MainWindow::on_BtnNextStep_clicked()
+{
+    if(!isLatest) //路径不是最新
+    {
+        for(int i=0;i<path.size();i++)
+            path.pop();
+        string st;
+        for(int i=0;i<Width;i++)
+            for(int j=0;j<Width;j++)
+                st+=Blocks[i][j]->text().toStdString();
+        bfs(st);
+        isLatest = true;
+    }
+    char op;
+    if(!path.empty()) //当前路径为最新
+    {
+        op=path.top();
+        path.pop();
+
+        for(int row = 0 ; row < Width ;row++)
+            for(int col = 0 ; col < Width ; col++)
+                if(Blocks[row][col]->text()=="0")
+                {
+                    switch(op) //进行操作
+                    {
+                    case 'd':
+                        if(row!=Width-1)
+                        {
+                            SwepBlocks(row+1,col,row,col);
+                            return ;
+                        }
+                    case 'u':
+                        if(row!=0)
+                        {
+                            SwepBlocks(row-1,col,row,col);
+                            return ;
+                        }
+                    case 'r':
+                        if(col!=Width-1)
+                        {
+                            SwepBlocks(row,col+1,row,col);
+                            return ;
+                        }
+                    case 'l':
+                        if(col!=0)
+                        {
+                            SwepBlocks(row,col-1,row,col);
+                            return ;
+                        }
+                    default:
+                        return ;
+
+                    }
+                }
+    }
+
+}
+
 void MainWindow::ClearGrid()
 {
     if(Width == 0)
         return;
+    ui->LabCount->setText("0");
     for(int i=0;i<Width;i++)
         for(int j=0;j<Width;j++)
             delete Blocks[i][j];
     Blocks.clear();
+    for(int i=0;i<path.size();i++)
+        path.pop();
+    isLatest = false;
 }
 
 int MainWindow::MergeSort(std::vector<int> &nums, int left, int right)
@@ -213,29 +283,30 @@ void MainWindow::InitialRandom()
     Nums.push_back(0); //空格位添加0
 }
 
-int MainWindow::isAroundSpare(int row, int col)
+char MainWindow::isAroundSpare(int row, int col)
 {
-    if(Blocks[row][col]->text()=="0")
-        return -1;
-    if(row>0)
-        if(Blocks[row-1][col]->text()=="0")
-            return 3; //up
-    if(row<Width-1)
-        if(Blocks[row+1][col]->text()=="0")
-            return 1; //down
-    if(col>0)
-        if(Blocks[row][col-1]->text()=="0")
-            return 2; //left
-    if(col<Width-1)
-        if(Blocks[row][col+1]->text()=="0")
-            return 0; //right
+    int dir[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; //方向参数
+    char op[5] = "udlr";
 
-    return -1;
+
+    if(Blocks[row][col]->text()=="0")
+        return 'n';
+
+    for (int i = 0; i < 4; i++)
+    {
+        int dx = row + dir[i][0], dy = col + dir[i][1]; //四个方向探查
+        if (dx < 0 || dy < 0 || dx >= Width || dy >= Width) //越界跳过
+            continue;
+        if(Blocks[dx][dy]->text()=="0")
+            return op[i];
+    }
+
+    return 'n';
 }
 
 void MainWindow::SwepBlocks(int o_row, int o_col, int t_row, int t_col)
 {
-    QString num = Blocks[t_row][t_col]->text();
+    QString num = Blocks[t_row][t_col]->text(); //临时变量用于交换
     bool vis =Blocks[t_row][t_col]->isVisible();
 
     Blocks[t_row][t_col]->setText(Blocks[o_row][o_col]->text());
@@ -243,7 +314,7 @@ void MainWindow::SwepBlocks(int o_row, int o_col, int t_row, int t_col)
 
     Blocks[o_row][o_col]->setText(num);
     Blocks[o_row][o_col]->setVisible(vis);
-
+    ui->LabCount->setText(QString::number(ui->LabCount->text().toInt()+1)); //计数+1
     isVictory();
 
 }
@@ -254,12 +325,84 @@ bool MainWindow::isVictory()
         for(int j=0;j<Width;j++)
             if(!(i==Width-1 && j==Width-1) && Blocks[i][j]->text()!=QString::number(i*Width+j+1))
                 return false;
-    QMessageBox::information(NULL,"通关","恭喜获得胜利！");
+    if(ui->LabCount->text().toInt()<MinCount)
+    {
+        MinCount = ui->LabCount->text().toInt();
+        ui->LabMin->setText(QString::number(MinCount));
+    }
+    QMessageBox::information(NULL,"通关","恭喜获得胜利！\n点击\"重置当前\"挑战更短步骤！");
     return true;
 }
 
+int MainWindow::f(string s)
+{
+    int res = 0;
+    for (int i = 0; i < s.size(); i++)
+    {
+        if (s[i] == '0')
+            continue;
+        int t = s[i] - 1;
+        res += abs(i / Width - t / Width) + abs(i % Width - t % Width);
+    }
+    return res;
+}
 
+void MainWindow::bfs(string st)
+{
+    unordered_map<string, int> dist; //无向图，记录不同布局的距离
+    unordered_map<string, pair<string, char>> pre;
+    typedef pair<int, string> PIS; //键值对
+    string ed = "";
+    for (int i = 1; i < Width * Width; i++)
+        ed += static_cast<char>(i+48); //转字符
+    ed += '0';
+    int dir[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}; //方向参数
+    char op[5] = "udlr";                                //方向标识
 
+    priority_queue<PIS, vector<PIS>, greater<PIS>> q; //升序优先队列
+    q.push({f(st), st});                              //入队初始距离与初始布局
+    dist[st] = 0;                                     //初始布局键值为0
+    while (q.size())                                  //当优先队列不为空时
+    {
+        auto t = q.top(); //取队列顶
+        q.pop();
+        string state = t.second; //获取布局
+        // out(state); //可选输出
+        if (state == ed) //当与期望结束布局一致时退出
+            break;
+        int step = dist[state]; //获取当前布局的距离
+        int x, y;
+        for (int i = 0; i < state.size(); i++) //获取空格所在位置
+            if (state[i] == '0')
+            {
+                x = i / Width, y = i % Width;
+                break;
+            }
+        string src = state; //复制当前布局
+        for (int i = 0; i < 4; i++)
+        {
+            int dx = x + dir[i][0], dy = y + dir[i][1]; //四个方向探查
+            if (dx < 0 || dy < 0 || dx >= Width || dy >= Width) //越界跳过
+                continue;
+            // src = state;
+            swap(src[x * Width + y], src[dx * Width + dy]);       //交换空格与探查对象
+            if (!dist.count(src) || dist[src] > step + 1) //交换后布局不存在或者存在比现有步数多的布局
+            {
+                dist[src] = step + 1;                 //添加、更新布局
+                pair<string, int> o = {state, op[i]}; //布局与操作字符
+                q.push({step + 1 + f(src), src});     //当前步数+曼哈顿距离，当前布局，入队
+                pre[src] = o;                         //记录步骤
+            }
+            swap(src[x * Width + y], src[dx * Width + dy]); //换回原布局，准备探查下一个方向
+        }
+    }
 
+    while (ed != st)
+    {
+        auto o = pre[ed]; //依次取出到达结果的路径
+        path.push(o.second);
+        ed = o.first;
+    }
+}
 
 
