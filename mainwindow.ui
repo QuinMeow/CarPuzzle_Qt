@@ -94,7 +94,7 @@
         <item>
          <widget class="QPushButton" name="BtnRandom">
           <property name="text">
-           <string>Roll一下</string>
+           <string>随机一下</string>
           </property>
          </widget>
         </item>

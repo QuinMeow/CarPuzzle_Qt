@@ -367,7 +367,6 @@ void MainWindow::bfs(string st)
         auto t = q.top(); //取队列顶
         q.pop();
         string state = t.second; //获取布局
-        // out(state); //可选输出
         if (state == ed) //当与期望结束布局一致时退出
             break;
         int step = dist[state]; //获取当前布局的距离
@@ -384,9 +383,8 @@ void MainWindow::bfs(string st)
             int dx = x + dir[i][0], dy = y + dir[i][1]; //四个方向探查
             if (dx < 0 || dy < 0 || dx >= Width || dy >= Width) //越界跳过
                 continue;
-            // src = state;
             swap(src[x * Width + y], src[dx * Width + dy]);       //交换空格与探查对象
-            if (!dist.count(src) || dist[src] > step + 1) //交换后布局不存在或者存在比现有步数多的布局
+            if (!dist.count(src) || dist[src] > step + 1) //交换后布局不存在或者存在步数更多的相同布局
             {
                 dist[src] = step + 1;                 //添加、更新布局
                 pair<string, int> o = {state, op[i]}; //布局与操作字符
@@ -401,7 +399,7 @@ void MainWindow::bfs(string st)
     {
         auto o = pre[ed]; //依次取出到达结果的路径
         path.push(o.second);
-        ed = o.first;
+        ed = o.first; //寻找上一步
     }
 }
 

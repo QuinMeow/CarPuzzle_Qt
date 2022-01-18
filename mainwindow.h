@@ -38,7 +38,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QVector<QVector<QLabel*>> Blocks; //Vector对象用于存储单元格指针
-    std::vector<int> Nums; //存储当前初始顺序
+    std::vector<int> Nums; //存储初始序列
     int MinCount;
     int Width; //存储华容道规模
     void ClearGrid(); //清除华容道
